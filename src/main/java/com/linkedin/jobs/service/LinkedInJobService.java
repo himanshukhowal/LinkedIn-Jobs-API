@@ -46,9 +46,13 @@ public class LinkedInJobService {
 			jobPosting.setSubtitle(liElement.select(".base-search-card__subtitle a").text());
 			jobPosting.setLocation(liElement.select(".job-search-card__location").text());
 			Element timeElement = liElement.selectFirst(".job-search-card__listdate");
+			Element dateFiltered = liElement.selectFirst(".job-search-card__listdate--new");
 			if (timeElement != null) {
 				jobPosting.setListDate(timeElement.attr("datetime"));
 				jobPosting.setListDateAgo(timeElement.text());
+			} else if (dateFiltered != null) {
+				jobPosting.setListDate(dateFiltered.attr("datetime"));
+				jobPosting.setListDateAgo(dateFiltered.text());
 			}
 			Element linkElement = liElement.selectFirst(".base-card__full-link");
 			if (linkElement != null) {
