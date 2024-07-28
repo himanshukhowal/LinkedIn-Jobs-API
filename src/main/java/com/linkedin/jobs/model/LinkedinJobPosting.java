@@ -14,7 +14,7 @@ import lombok.Data;
 @Data
 @Builder
 @AllArgsConstructor
-public class JobPosting {
+public class LinkedinJobPosting {
 	private String keyword;
 	private String location;
 	private DateRange dateSincePosted;

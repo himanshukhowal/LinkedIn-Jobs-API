@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class JobPostingResponse {
+public class LinkedinJobPostingResponse {
 	private String title;
     private String subtitle;
     private String location;

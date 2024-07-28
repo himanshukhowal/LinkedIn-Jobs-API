@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.linkedin.jobs.constants.AppConstants;
-import com.linkedin.jobs.model.JobPosting;
-import com.linkedin.jobs.model.JobPostingResponse;
+import com.linkedin.jobs.model.LinkedinJobPosting;
+import com.linkedin.jobs.model.LinkedinJobPostingResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
-public class LinkedInJobService {
+public class JobService {
 
 	@Autowired
 	private RestTemplate restTemplate;
@@ -27,21 +27,21 @@ public class LinkedInJobService {
 	@Autowired
 	private Environment env;
 
-	public List<JobPostingResponse> getJobPostings(JobPosting jobs) throws Exception {
+	public List<LinkedinJobPostingResponse> getJobPostings(LinkedinJobPosting jobs) throws Exception {
 		return extractJobPostings(jobs);
 	}
 
-	private List<JobPostingResponse> extractJobPostings(JobPosting jobs) throws Exception {
+	private List<LinkedinJobPostingResponse> extractJobPostings(LinkedinJobPosting jobs) throws Exception {
 		String html = restTemplate.getForObject(getJobsUrl(env.getProperty(AppConstants.LINKEDIN_URL_KEY), jobs),
 				String.class);
 
 		Document document = Jsoup.parse(html);
 
 		Elements liElements = document.select("li");
-		List<JobPostingResponse> jobPostings = new ArrayList<JobPostingResponse>();
+		List<LinkedinJobPostingResponse> jobPostings = new ArrayList<LinkedinJobPostingResponse>();
 
 		for (Element liElement : liElements) {
-			JobPostingResponse jobPosting = new JobPostingResponse();
+			LinkedinJobPostingResponse jobPosting = new LinkedinJobPostingResponse();
 			jobPosting.setTitle(liElement.select(".base-search-card__title").text());
 			jobPosting.setSubtitle(liElement.select(".base-search-card__subtitle a").text());
 			jobPosting.setLocation(liElement.select(".job-search-card__location").text());
@@ -64,7 +64,7 @@ public class LinkedInJobService {
 		return jobPostings;
 	}
 
-	private String getJobsUrl(String url, JobPosting jobs) throws Exception {
+	private String getJobsUrl(String url, LinkedinJobPosting jobs) throws Exception {
 		AtomicReference<String> atomicUrl = new AtomicReference<String>(url);
 		Optional.ofNullable(jobs.getKeyword())
 				.ifPresent(keyword -> atomicUrl.set(atomicUrl.get() + "&keywords=" + keyword));
