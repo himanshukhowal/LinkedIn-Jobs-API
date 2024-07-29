@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.linkedin.jobs.constants.AppConstants;
 import com.linkedin.jobs.enums.SuccessResponseEnum;
 import com.linkedin.jobs.model.LinkedinJobPosting;
+import com.linkedin.jobs.model.NaukriJobPosting;
 import com.linkedin.jobs.responsehandler.ResponseHandler;
 import com.linkedin.jobs.service.JobService;
 
@@ -21,20 +22,33 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/linkedin")
-public class LinkedInController {
+@RequestMapping("/api/jobs")
+public class JobsController {
 
 	@Autowired
-	private JobService linkedInJobService;
+	private JobService jobService;
 
-	@PostMapping("/jobs")
+	@PostMapping("/linkedin")
 	@RolesAllowed({ AppConstants.ROLE_ADMIN })
-	public ResponseEntity<?> jobsEndpoint(HttpServletRequest request, @AuthenticationPrincipal Jwt jwt, @RequestBody LinkedinJobPosting jobs)
+	public ResponseEntity<?> linkedinEndpoint(HttpServletRequest request, @AuthenticationPrincipal Jwt jwt, @RequestBody LinkedinJobPosting jobs)
 			throws Exception {
 		try {
 			log.info("Started Execution in LinkedInController : jobsEndpoint");
 			return ResponseHandler.generateResponse(SuccessResponseEnum.SUCCESS_GET.getResponseMessage(), request,
-					SuccessResponseEnum.SUCCESS_GET.getResponseCode(), linkedInJobService.getJobPostings(jobs));
+					SuccessResponseEnum.SUCCESS_GET.getResponseCode(), jobService.getLinkedinJobPostings(jobs));
+		} finally {
+			log.info("Started Completed in LinkedInController : jobsEndpoint");
+		}
+	}
+	
+	@PostMapping("/naukri")
+	@RolesAllowed({ AppConstants.ROLE_ADMIN })
+	public ResponseEntity<?> naukriEndpoint(HttpServletRequest request, @AuthenticationPrincipal Jwt jwt, @RequestBody NaukriJobPosting jobs)
+			throws Exception {
+		try {
+			log.info("Started Execution in LinkedInController : jobsEndpoint");
+			return ResponseHandler.generateResponse(SuccessResponseEnum.SUCCESS_GET.getResponseMessage(), request,
+					SuccessResponseEnum.SUCCESS_GET.getResponseCode(), jobService.getNaukriJobPostings(jobs));
 		} finally {
 			log.info("Started Completed in LinkedInController : jobsEndpoint");
 		}

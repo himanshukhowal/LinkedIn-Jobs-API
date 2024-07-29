@@ -6,12 +6,18 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.linkedin.jobs.constants.AppConstants;
 import com.linkedin.jobs.model.LinkedinJobPosting;
 import com.linkedin.jobs.model.LinkedinJobPostingResponse;
+import com.linkedin.jobs.model.NaukriJobPosting;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,13 +33,26 @@ public class JobService {
 	@Autowired
 	private Environment env;
 
-	public List<LinkedinJobPostingResponse> getJobPostings(LinkedinJobPosting jobs) throws Exception {
+	public List<LinkedinJobPostingResponse> getLinkedinJobPostings(LinkedinJobPosting jobs) throws Exception {
 		return extractJobPostings(jobs);
 	}
 
+	public JsonNode getNaukriJobPostings(NaukriJobPosting jobs) throws Exception {
+		return extractNaukriJobsPosting(jobs);
+	}
+
+	private JsonNode extractNaukriJobsPosting(NaukriJobPosting jobs) throws Exception {
+		HttpHeaders headers = new HttpHeaders();
+        headers.set("Appid", "109");
+        headers.set("Systemid", "Naukri");
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        ResponseEntity<JsonNode> response = restTemplate.exchange(getNaukriJobsUrl(env.getProperty(AppConstants.NAUKRI_URL_KEY), jobs), HttpMethod.GET, entity, JsonNode.class);
+		return response.getBody().get("jobDetails");
+	}
+
 	private List<LinkedinJobPostingResponse> extractJobPostings(LinkedinJobPosting jobs) throws Exception {
-		String html = restTemplate.getForObject(getJobsUrl(env.getProperty(AppConstants.LINKEDIN_URL_KEY), jobs),
-				String.class);
+		String html = restTemplate
+				.getForObject(getLinkedInJobsUrl(env.getProperty(AppConstants.LINKEDIN_URL_KEY), jobs), String.class);
 
 		Document document = Jsoup.parse(html);
 
@@ -64,7 +83,7 @@ public class JobService {
 		return jobPostings;
 	}
 
-	private String getJobsUrl(String url, LinkedinJobPosting jobs) throws Exception {
+	private String getLinkedInJobsUrl(String url, LinkedinJobPosting jobs) throws Exception {
 		AtomicReference<String> atomicUrl = new AtomicReference<String>(url);
 		Optional.ofNullable(jobs.getKeyword())
 				.ifPresent(keyword -> atomicUrl.set(atomicUrl.get() + "&keywords=" + keyword));
@@ -84,6 +103,17 @@ public class JobService {
 				.ifPresent(start -> atomicUrl.set(atomicUrl.get() + "&start=" + (start * 10)));
 		Optional.ofNullable(jobs.getSortMethod())
 				.ifPresent(sortBy -> atomicUrl.set(atomicUrl.get() + "&sortBy=" + sortBy.getSortMethod()));
+		return atomicUrl.get();
+	}
+	
+	private String getNaukriJobsUrl(String url, NaukriJobPosting jobs) throws Exception {
+		AtomicReference<String> atomicUrl = new AtomicReference<String>(url);
+		Optional.ofNullable(jobs.getKeyword())
+				.ifPresent(keyword -> atomicUrl.set(atomicUrl.get() + "&keyword=" + keyword));
+		Optional.ofNullable(jobs.getLocation())
+				.ifPresent(location -> atomicUrl.set(atomicUrl.get() + "&location=" + location));
+		Optional.ofNullable(jobs.getPageNo())
+		.ifPresent(pageNo -> atomicUrl.set(atomicUrl.get() + "&pageNo=" + pageNo));
 		return atomicUrl.get();
 	}
 

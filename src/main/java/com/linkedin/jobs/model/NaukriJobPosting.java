@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class NaukriJobPosting {
 
-	String location;
+	private String location;
+	private String keyword;
+	private Integer pageNo;
 	
 }
